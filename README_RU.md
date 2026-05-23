@@ -69,4 +69,4 @@ Python TUI построен на **Textual** (Rich-based терминальны�
 
 ## Лицензия
 
-GPLv3
+ФАК Ю СЕЛФ — см. [LICENSE](LICENSE)
