@@ -1,41 +1,71 @@
 # PsychoTests
 
-A TUI application with 9 psychological tests, rebuilt from original DOS programs (1990s).
+A modern TUI recreation of 9 psychological tests originally written as DOS programs in the 1990s. Built by reverse-engineering the original COM/EXE binaries.
 
 ## Tests
 
-| Test | What it measures | Questions |
-|------|-----------------|-----------|
-| **Biorhythm** | Physical, emotional, intellectual cycles | Date-based |
-| **Eysenck EPI** | Extraversion, Neuroticism, Lie scale | 57 Yes/No |
-| **Stress** | Stress level | 24 × 1-5 |
-| **Neiro** | Neuropsychological state | 24 × 1-5 |
-| **Connect** | Interpersonal compatibility | 25 × 1-5 |
-| **Economy** | Business orientation | 25 × 1-5 |
-| **Heart** | Cardiovascular tendencies (6 scales) | 25 × 1-5 |
-| **Selftest** | Self-esteem | 20 × 1-5 |
-| **Luscher** | Color personality test | 8 colors × 2 rounds |
+| Test | Measures | Items |
+|------|----------|-------|
+| **Biorhythm** | Physical (23d), emotional (28d), intellectual (33d) cycles | Date-based |
+| **Eysenck EPI** | Extraversion (24), Neuroticism (24), Lie scale (9) | 57 Yes/No |
+| **Stress** | Stress level | 24 × Likert 1-5 |
+| **Neiro** | Neuropsychological state | 24 × Likert 1-5 |
+| **Connect** | Interpersonal compatibility | 25 × Likert 1-5 |
+| **Economy** | Business orientation | 25 × Likert 1-5 |
+| **Heart** | Cardiovascular tendencies (IBC/PPS/DE/AG/NCD/ZM) | 25 × Likert 1-5 |
+| **Selftest** | Self-esteem | 20 × Likert 1-5 |
+| **Luscher** | Color personality (anxiety, compensation, activity, efficiency) | 8 colors × 2 rounds |
 
-## Usage
+## Quick start
 
 ```bash
 pip install -r requirements.txt
 python3 run.py
 ```
 
+Dependencies: Python 3.14+, Textual 8.x, Pydantic 2.x, Rich.
+
+### Controls
+
 | Key | Action |
 |-----|--------|
-| `q` / `й` | Quit |
-| `escape` | Back |
-| `1`–`5` | Select answer |
+| `q` / `й` | Quit (with confirmation) |
+| `escape` | Go back |
+| `1`–`5` | Select answer (Likert tests) |
 | `enter` | Next question |
-| `↑↓←→` | Navigate |
+| `↑↓←→` | Navigate / switch radio buttons |
 
-Features: user management, test history, Russian interface.
+Features: multi-user profiles, test history with SQLite storage, Russian interface.
 
-## Reverse Engineering
+## Reverse engineering story
 
-The original DOS programs were reverse-engineered to extract test logic, question banks, and interpretation texts. See [docs/analysis.md](docs/analysis.md) for the full report.
+The original collection "Сборка прог по психологии" was a DOS software package from the mid-1990s containing 8 COM files compiled with **Turbo Pascal** and an EXE for the Luscher color test. All source code and the external question bank (`CODE.DAT`) were lost — only the binaries survived.
+
+### Phase 1: Binary analysis
+
+Hex analysis of the COM files revealed a shared runtime signature (`e9 79 2c 90 cd ab 20 20`) and a consistent layout: Turbo Pascal startup code, then program-specific data interspersed with code. The programs used `CODE.DAT` — a 256-record binary file (240 questions + 16 parameter records) that was missing from the archive. Test parameters (scale keys, inversion masks, normalization factors) were embedded in the last 16 records.
+
+The Luscher test (`LUSHER.EXE`) was an MS-DOS MZ executable with its own data files: `LUSHER.DAT` (binary subject DB), `LUSHER.INT` (interpretation texts in CP866), and `LUSHER.CAT` (subject catalog). These files were present in the archive and could be read directly.
+
+### Phase 2: Reconstructing question banks
+
+Without `CODE.DAT`, every question bank had to be reconstructed from:
+- **Eysenck EPI**: 57 standard EPI questions (Russian adaptation), scale keys from published methodology
+- **Stress/Neiro/Connect/Economy/Heart/Selftest**: Likert-scale questionnaires reconstructed from parameter clues in the COM binaries — 24 or 25 questions each with specific inversion patterns
+- **Biorhythm**: Pure calculation (sinusoidal cycles), no question bank needed
+- **Luscher**: 8 colors, 2 rounds — logic extracted from the EXE by tracing the choice → score → interpretation pipeline
+
+Interpretation texts were reverse-engineered from the original DOS strings in the binaries and from `LUSHER.INT`.
+
+### Phase 3: Building the TUI
+
+The Python TUI uses **Textual** (Rich-based terminal UI framework) with:
+- `_base_test.py` — reusable screen for all Likert tests (radio buttons 1-5)
+- Custom screens for Eysenck (2-button Yes/No), Biorhythm (date input), Luscher (color pick flow)
+- SQLite3 for persistent storage with Pydantic models
+- Arrow key navigation, `q`/`escape` exit flow, Russian-language interface
+
+The full reverse-engineering report with mermaid diagrams is in [`docs/analysis.md`](docs/analysis.md). Developer documentation in [`docs/development.md`](docs/development.md).
 
 ## License
 
