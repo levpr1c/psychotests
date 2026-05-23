@@ -1,5 +1,7 @@
 # PsychoTests
 
+[README на русском](README_RU.md)
+
 A modern TUI recreation of 9 psychological tests originally written as DOS programs in the 1990s. Built by reverse-engineering the original COM/EXE binaries.
 
 ## Tests
