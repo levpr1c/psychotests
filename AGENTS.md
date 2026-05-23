@@ -49,7 +49,8 @@ run.py → src/main.py → init_db() + PsychoApp().run()
 4. `luscher_calc.py`: `list.index()` on duplicates → `_safe_index()`.
 5. `heart_calc.py`: `ZeroDivisionError` on empty scale list.
 
-## Build binary
+## Build binaries
+Linux:
 ```bash
 pip install pyinstaller
 pyinstaller --onefile \
@@ -58,7 +59,14 @@ pyinstaller --onefile \
   --name psychotests \
   run.py
 ```
-Binary goes to `dist/psychotests`. Copy to `release/` manually.
+Windows (via Docker, Python 3.13):
+```bash
+docker run --rm -e DISPLAY= -v "$(pwd):/src" ddemuro/pyinstaller:py3-win64-3.13.3-6.13.0 \
+  "pip install -r /src/requirements.txt && pyinstaller --onefile --add-data 'src/app.tcss;src/' --add-data 'src/data;src/data' --name psychotests /src/run.py"
+```
+Binary goes to `dist/`. Copy to `release/` to commit.
+
+Auto-build on tag push via `.github/workflows/build.yml` (GitHub Actions).
 
 ## Key Bindings
 - `q` / `й` → quit (with confirm) — App-level
