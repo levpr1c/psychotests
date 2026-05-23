@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.whl
+*.egg-info/
+
+# Virtualenv
+venv/
+.virtualenv/
+.env/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# PyInstaller
+*.spec
+
+# Database
+data/psycho.db
+
+# Release builds (tracked manually)
+release/*.zip

@@ -1,0 +1,164 @@
+Screen {
+    background: $surface;
+}
+
+#main_content {
+    margin: 1 4;
+    height: 100%;
+    align: center middle;
+}
+
+#title {
+    text-style: bold;
+    color: $text-accent;
+    width: 100%;
+    text-align: center;
+    padding: 1 0 0 0;
+}
+
+#subtitle {
+    color: $text-muted;
+    width: 100%;
+    text-align: center;
+    padding: 0 0 1 0;
+}
+
+#user_label {
+    text-style: bold;
+    color: $secondary;
+    width: 100%;
+    text-align: center;
+    padding: 0 0 1 0;
+}
+
+#question_label {
+    text-style: bold;
+    width: 100%;
+    text-align: center;
+    padding: 1 4;
+}
+
+#key_legend {
+    color: $text-muted;
+    width: 100%;
+    text-align: center;
+    padding: 0 6 1 6;
+}
+
+#answer_set {
+    padding: 1 6;
+    align: center middle;
+    width: 100%;
+}
+
+#nav_buttons {
+    height: 3;
+    align: center middle;
+    width: 100%;
+    padding: 0 6;
+}
+
+#color_buttons {
+    height: 10;
+    align: center middle;
+}
+
+#color_buttons Button {
+    min-width: 20;
+    margin: 0 1;
+}
+
+#result_area {
+    padding: 1 4;
+    width: 100%;
+}
+
+ListView {
+    margin: 1 6;
+}
+
+ListItem {
+    padding: 0 1;
+}
+
+Button {
+    margin: 0 1;
+}
+
+#actions {
+    height: 3;
+    align: center middle;
+    width: 100%;
+}
+
+#new_user {
+    width: 24;
+}
+
+#history {
+    width: 16;
+}
+
+#progress {
+    color: $text-muted;
+    width: 100%;
+    text-align: center;
+}
+
+#round_label {
+    width: 100%;
+    text-align: center;
+}
+
+#instruction {
+    width: 100%;
+    text-align: center;
+}
+
+#date_label {
+    width: 100%;
+    text-align: center;
+}
+
+#target_date {
+    width: 30;
+}
+
+#calc_btn {
+    width: 30;
+}
+
+#name_label, #birth_label {
+    text-style: bold;
+    color: $text;
+    width: 100%;
+    text-align: center;
+    padding: 0 0 0 0;
+}
+
+#name_label {
+    padding: 1 0 0 0;
+}
+
+#name_input {
+    width: 30;
+}
+
+#birth_input {
+    width: 30;
+}
+
+#create_btn {
+    width: 30;
+}
+
+#name_row, #birth_row, #create_row {
+    align: center middle;
+    width: 100%;
+    height: auto;
+}
+
+#user_list Label {
+    text-align: center;
+    width: 100%;
+}
