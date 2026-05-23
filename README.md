@@ -69,4 +69,4 @@ The full reverse-engineering report with mermaid diagrams is in [`docs/analysis.
 
 ## License
 
-GPLv3
+WTFPL — see [LICENSE](LICENSE)
