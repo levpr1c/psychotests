@@ -1,0 +1,59 @@
+name: Build
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            sep: ":"
+            ext: ""
+          - os: windows-latest
+            sep: ";"
+            ext: ".exe"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install deps
+        run: pip install pyinstaller pydantic textual rich
+
+      - name: Build
+        run: |
+          pyinstaller --onefile `
+            --add-data "src/app.tcss${{ matrix.sep }}src/" `
+            --add-data "src/data${{ matrix.sep }}src/data" `
+            --name psychotests${{ matrix.ext }} `
+            run.py
+        shell: pwsh
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: psychotests-${{ matrix.os }}
+          path: dist/psychotests${{ matrix.ext }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: psychotests-*/*
