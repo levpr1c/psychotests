@@ -1,4 +1,3 @@
-import os
 import sys
 import sqlite3
 from datetime import date, datetime
@@ -114,6 +113,14 @@ def get_results_for_user(user_id: int) -> list[TestResult]:
             result.scores = json.loads(row["scores"]) if row["scores"] else {}
             results.append(result)
         return results
+
+
+def get_test_names() -> list[str]:
+    with get_connection() as conn:
+        rows = conn.execute(
+            "SELECT DISTINCT test_name FROM test_results ORDER BY test_name"
+        ).fetchall()
+        return [r["test_name"] for r in rows]
 
 
 def get_all_results() -> list[TestResult]:

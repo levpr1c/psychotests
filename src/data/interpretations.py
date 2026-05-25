@@ -51,7 +51,7 @@ BIO_INTERPRETATION = {
 
 
 def get_eysenck_interpretation(e_score: int, n_score: int, l_score: int) -> str:
-    lines = ["## Результаты теста Айзенка (EPI)", ""]
+    lines = ["[bold]Результаты теста Айзенка (EPI)[/bold]", ""]
 
     for table, score, label in [
         (EYSENCK_EXTRAVERSION, e_score, "Экстраверсия"),
@@ -63,12 +63,11 @@ def get_eysenck_interpretation(e_score: int, n_score: int, l_score: int) -> str:
             if lo <= score <= hi:
                 text = desc
                 break
-        lines.append(f"**{label} ({score} баллов):** {text}")
+        lines.append(f"[bold]{label} ({score} баллов):[/bold] {text}")
         lines.append("")
 
-    # Temperament type
-    lines.append("---")
-    lines.append(f"**Темперамент:** {_get_temperament(e_score, n_score)}")
+    lines.append("─" * 20)
+    lines.append(f"[bold]Темперамент:[/bold] {_get_temperament(e_score, n_score)}")
 
     return "\n".join(lines)
 
@@ -102,27 +101,21 @@ def get_stress_interpretation(score: int) -> str:
 def get_heart_interpretation(
     ibc: float, pps: float, de: float, ag: float, ncd: float, zm: float
 ) -> str:
-    return f"""
-## Результаты оценки сердечно-сосудистой системы
-
-**Вегетативный баланс (IBC): {ibc:.1f}**
-{'Нормальный вегетативный тонус' if 3 <= ibc <= 7 else 'Возможно нарушение вегетативной регуляции'}
-
-**Периферическое сосудистое сопротивление (PPS): {pps:.1f}**
-{'В норме' if 3 <= pps <= 7 else 'Требуется внимание'}
-
-**Депрессия/Энергия (DE): {de:.1f}**
-{'Хороший энергетический тонус' if de >= 4 else 'Сниженный энергетический тонус'}
-
-**Активность (AG): {ag:.1f}**
-{'Умеренная активность' if 3 <= ag <= 7 else 'Возможна гиперактивность или гипоактивность'}
-
-**Нейро-циркуляторная дистония (NCD): {ncd:.1f}**
-{'Без особенностей' if ncd <= 5 else 'Возможны признаки НЦД'}
-
-**Защитные механизмы (ZM): {zm:.1f}**
-{'В норме' if 3 <= zm <= 7 else 'Требуется наблюдение'}
-"""
+    return (
+        "[bold]Результаты оценки сердечно-сосудистой системы[/bold]\n\n"
+        f"[bold]Вегетативный баланс (IBC):[/bold] {ibc:.1f}\n"
+        f"{'Нормальный вегетативный тонус' if 3 <= ibc <= 7 else 'Возможно нарушение вегетативной регуляции'}\n\n"
+        f"[bold]Периферическое сосудистое сопротивление (PPS):[/bold] {pps:.1f}\n"
+        f"{'В норме' if 3 <= pps <= 7 else 'Требуется внимание'}\n\n"
+        f"[bold]Депрессия/Энергия (DE):[/bold] {de:.1f}\n"
+        f"{'Хороший энергетический тонус' if de >= 4 else 'Сниженный энергетический тонус'}\n\n"
+        f"[bold]Активность (AG):[/bold] {ag:.1f}\n"
+        f"{'Умеренная активность' if 3 <= ag <= 7 else 'Возможна гиперактивность или гипоактивность'}\n\n"
+        f"[bold]Нейро-циркуляторная дистония (NCD):[/bold] {ncd:.1f}\n"
+        f"{'Без особенностей' if ncd <= 5 else 'Возможны признаки НЦД'}\n\n"
+        f"[bold]Защитные механизмы (ZM):[/bold] {zm:.1f}\n"
+        f"{'В норме' if 3 <= zm <= 7 else 'Требуется наблюдение'}"
+    )
 
 
 def get_selftest_interpretation(score: int) -> str:
@@ -197,43 +190,43 @@ def get_luscher_interpretation(
     vegetative_pct: float,
     consistency: float,
 ) -> str:
-    lines = ["## Цветовой тест Люшера", ""]
-    lines.append(f"**Дата:** {__import__('datetime').datetime.now():%d.%m.%Y %H:%M}")
+    lines = ["[bold]Цветовой тест Люшера[/bold]", ""]
+    lines.append(f"Дата: {__import__('datetime').datetime.now():%d.%m.%Y %H:%M}")
     lines.append("")
 
     color_names = ["Серый", "Синий", "Зелёный", "Красный", "Жёлтый", "Фиолетовый", "Коричневый", "Чёрный"]
-    lines.append("**Выбор цветов (1-й раунд):**")
+    lines.append("[bold]Выбор цветов (1-й раунд):[/bold]")
     for i, c in enumerate(choices1):
         lines.append(f"  {i+1}. {color_names[c]} ({c})")
     lines.append("")
-    lines.append("**Выбор цветов (2-й раунд):**")
+    lines.append("[bold]Выбор цветов (2-й раунд):[/bold]")
     for i, c in enumerate(choices2):
         lines.append(f"  {i+1}. {color_names[c]} ({c})")
     lines.append("")
 
-    lines.append("### Результаты")
-    lines.append(f"**Тревога:** {anxiety_pct:.1f}%")
+    lines.append("[bold underline]Результаты[/bold underline]")
+    lines.append(f"[bold]Тревога:[/bold] {anxiety_pct:.1f}%")
     if anxiety_pct > 50:
         lines.append("- Повышенный уровень тревоги. Возможно внутреннее напряжение.")
     else:
         lines.append("- Уровень тревоги в норме.")
 
-    lines.append(f"**Компенсация:** {compensation_pct:.1f}%")
+    lines.append(f"[bold]Компенсация:[/bold] {compensation_pct:.1f}%")
     if compensation_pct > 50:
         lines.append("- Выраженные компенсаторные механизмы.")
     else:
         lines.append("- Компенсаторные механизмы в норме.")
 
-    lines.append(f"**Активность:** {activity_pct:.1f}%")
+    lines.append(f"[bold]Активность:[/bold] {activity_pct:.1f}%")
     if activity_pct > 50:
         lines.append("- Повышенная активность, стремление к действию.")
     else:
         lines.append("- Уровень активности в норме или снижен.")
 
-    lines.append(f"**Работоспособность:** {performance_pct:.1f}%")
-    lines.append(f"**Вегетативный тонус:** {vegetative_pct:.1f}%")
+    lines.append(f"[bold]Работоспособность:[/bold] {performance_pct:.1f}%")
+    lines.append(f"[bold]Вегетативный тонус:[/bold] {vegetative_pct:.1f}%")
 
-    lines.append(f"**Консистентность:** {consistency:.2f}")
+    lines.append(f"[bold]Консистентность:[/bold] {consistency:.2f}")
     if consistency > 0.7:
         lines.append("- Выбор устойчив, результаты надёжны.")
     elif consistency > 0.3:
