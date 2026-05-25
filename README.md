@@ -37,7 +37,7 @@ Dependencies: Python 3.14+, Textual 8.x, Pydantic 2.x, Rich.
 | `enter` | Next question |
 | `↑↓←→` | Navigate / switch radio buttons |
 
-Features: multi-user profiles, test history with SQLite storage, Russian interface.
+Features: multi-user profiles, test history with statistics and bar charts (SQLite), Russian interface.
 
 ## Reverse engineering story
 
@@ -67,7 +67,7 @@ The Python TUI uses **Textual** (Rich-based terminal UI framework) with:
 - SQLite3 for persistent storage with Pydantic models
 - Arrow key navigation, `q`/`escape` exit flow, Russian-language interface
 
-The full reverse-engineering report with mermaid diagrams is in [`docs/analysis.md`](docs/analysis.md). Developer documentation in [`docs/development.md`](docs/development.md).
+The full reverse-engineering report with mermaid diagrams is in [`docs/analysis.md`](docs/analysis.md). Developer documentation in [`docs/development.md`](docs/development.md). Code walkthrough in [`docs/code-guide.md`](docs/code-guide.md).
 
 ### AI-generated
 
