@@ -34,7 +34,7 @@ venv.bak/
 *.spec
 
 # Database
-data/psycho.db
+data/
 
 # Release builds (tracked manually)
 release/*.zip
