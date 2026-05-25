@@ -27,6 +27,16 @@ class UserSelectScreen(Screen):
             if lv.index is None or lv.index < len(lv) - 1:
                 lv.action_cursor_down()
                 return
+            # At bottom of list, move focus to next widget (New User button)
+            self.focus_next()
+            return
+        elif isinstance(focused, Button):
+            # In button group, move focus to next button or wrap to list
+            if focused.id == "new_user":
+                self.query_one("#history", Button).focus()
+            elif focused.id == "history":
+                self.query_one("#user_list", ListView).focus()
+            return
         self.focus_next()
 
     def action_focus_previous(self):
@@ -36,6 +46,16 @@ class UserSelectScreen(Screen):
             if lv.index is not None and lv.index > 0:
                 lv.action_cursor_up()
                 return
+            # At top of list, move focus to previous widget (History button)
+            self.query_one("#history", Button).focus()
+            return
+        elif isinstance(focused, Button):
+            # In button group, move focus to previous button or wrap to list
+            if focused.id == "history":
+                self.query_one("#new_user", Button).focus()
+            elif focused.id == "new_user":
+                self.query_one("#user_list", ListView).focus()
+            return
         self.focus_previous()
 
     def action_back(self):

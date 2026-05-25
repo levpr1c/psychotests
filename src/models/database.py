@@ -1,3 +1,5 @@
+import os
+import sys
 import sqlite3
 from datetime import date, datetime
 from pathlib import Path
@@ -5,7 +7,13 @@ from src.models.user import User, UserCreate
 from src.models.test_result import TestResult, TestResultCreate
 
 
-DB_PATH = Path(__file__).parent.parent.parent / "data" / "psycho.db"
+if getattr(sys, 'frozen', False):
+    from platformdirs import user_data_dir
+    _DB_DIR = Path(user_data_dir("psychotests", ensure_exists=True))
+else:
+    _DB_DIR = Path(__file__).parent.parent.parent / "data"
+
+DB_PATH = _DB_DIR / "psycho.db"
 
 
 def get_connection() -> sqlite3.Connection:

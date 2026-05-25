@@ -120,6 +120,11 @@ Button {
     text-align: center;
 }
 
+#date_input_group {
+    width: 100%;
+    align: center middle;
+}
+
 #target_date {
     width: 30;
 }

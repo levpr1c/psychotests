@@ -55,6 +55,7 @@ class BaseTestScreen(Screen):
         self.current_q = 0
         self.answers: list[int] = []
         self.current_answer: int | None = None
+        self.test_completed: bool = False
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -109,7 +110,12 @@ class BaseTestScreen(Screen):
         self.current_answer = event.index
 
     def action_back(self):
-        self.app.push_screen(ConfirmModal("Хотите выйти из теста?"), self._on_exit_confirm)
+        if self.test_completed:
+            # After test completion, go back directly without confirmation
+            self.app.pop_screen()
+        else:
+            # During test, show confirmation
+            self.app.push_screen(ConfirmModal("Хотите выйти из теста?"), self._on_exit_confirm)
 
     def _on_exit_confirm(self, result: bool):
         if result:
@@ -165,4 +171,5 @@ class BaseTestScreen(Screen):
                 self.app.push_screen(ConfirmModal("Хотите выйти из теста?"), self._on_exit_confirm)
 
     def finish_test(self):
+        self.test_completed = True
         raise NotImplementedError

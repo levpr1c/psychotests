@@ -50,8 +50,11 @@ class BiorhythmScreen(Screen):
             Label("Биоритмы", id="title"),
             Static("Расчёт физических, эмоциональных и интеллектуальных биоритмов", id="subtitle"),
             Label("Дата расчёта (ГГГГ-ММ-ДД, по умолчанию сегодня):", id="date_label"),
-            Input(id="target_date", value=date.today().isoformat()),
-            Button("Рассчитать", id="calc_btn", variant="primary"),
+            Horizontal(
+                Input(id="target_date", value=date.today().isoformat()),
+                Button("Рассчитать", id="calc_btn", variant="primary"),
+                id="date_input_group",
+            ),
             Static(id="result_area"),
             id="main_content",
         )
