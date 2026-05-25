@@ -12,7 +12,6 @@ from src.models.test_result import TestResultCreate
 
 class StressScreen(BaseTestScreen):
     TITLE = "Тест на стресс"
-    SUBTITLE = "Оцените, насколько часто Вы испытываете эти состояния (1-5)"
     QUESTIONS = STRESS_QUESTIONS
 
     def finish_test(self):
@@ -23,8 +22,8 @@ class StressScreen(BaseTestScreen):
         self.query_one("#answer_set").disabled = True
         self.query_one("#nav_buttons").display = False
         self.query_one("#result_area", Static).update(
-            f"## Результат теста на стресс\n\n"
-            f"**Общий балл:** {result['total']}\n\n"
+            f"[bold]Результат теста на стресс[/bold]\n\n"
+            f"Общий балл: {result['total']}\n\n"
             f"{interpretation}"
         )
 
@@ -34,4 +33,5 @@ class StressScreen(BaseTestScreen):
             scores=result,
             interpretation=interpretation,
         ))
+        self.test_completed = True
         self.notify("Результат сохранён", severity="information")

@@ -12,7 +12,6 @@ from src.models.test_result import TestResultCreate
 
 class SelftestScreen(BaseTestScreen):
     TITLE = "Самооценка"
-    SUBTITLE = "Оцените, насколько Вы согласны с утверждениями (1-5)"
     QUESTIONS = SELFTEST_QUESTIONS
 
     def finish_test(self):
@@ -23,8 +22,8 @@ class SelftestScreen(BaseTestScreen):
         self.query_one("#answer_set").disabled = True
         self.query_one("#nav_buttons").display = False
         self.query_one("#result_area", Static).update(
-            f"## Результат оценки самооценки\n\n"
-            f"**Общий балл:** {result['total']}\n\n"
+            f"[bold]Результат оценки самооценки[/bold]\n\n"
+            f"Общий балл: {result['total']}\n\n"
             f"{interpretation}"
         )
 
@@ -34,4 +33,5 @@ class SelftestScreen(BaseTestScreen):
             scores=result,
             interpretation=interpretation,
         ))
+        self.test_completed = True
         self.notify("Результат сохранён", severity="information")

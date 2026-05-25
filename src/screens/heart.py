@@ -12,7 +12,6 @@ from src.models.test_result import TestResultCreate
 
 class HeartScreen(BaseTestScreen):
     TITLE = "Оценка сердечно-сосудистой системы"
-    SUBTITLE = "Оцените частоту симптомов (1-5)"
     QUESTIONS = [q for q, _ in HEART_QUESTIONS]
     SCALES = [s for _, s in HEART_QUESTIONS]
 
@@ -44,4 +43,5 @@ class HeartScreen(BaseTestScreen):
             scores=result,
             interpretation=interpretation,
         ))
+        self.test_completed = True
         self.notify("Результат сохранён", severity="information")

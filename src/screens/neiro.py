@@ -12,7 +12,6 @@ from src.models.test_result import TestResultCreate
 
 class NeiroScreen(BaseTestScreen):
     TITLE = "Неврологический тест"
-    SUBTITLE = "Оцените, как часто Вас беспокоят эти симптомы (1-5)"
     QUESTIONS = NEIRO_QUESTIONS
 
     def finish_test(self):
@@ -23,9 +22,9 @@ class NeiroScreen(BaseTestScreen):
         self.query_one("#answer_set").disabled = True
         self.query_one("#nav_buttons").display = False
         self.query_one("#result_area", Static).update(
-            f"## Результат неврологического теста\n\n"
-            f"**Общий балл:** {result['total']}\n"
-            f"**Уровень:** {result['level']}\n\n"
+            f"[bold]Результат неврологического теста[/bold]\n\n"
+            f"Общий балл: {result['total']}\n"
+            f"Уровень: {result['level']}\n\n"
             f"{interpretation}"
         )
 
@@ -35,4 +34,5 @@ class NeiroScreen(BaseTestScreen):
             scores=result,
             interpretation=interpretation,
         ))
+        self.test_completed = True
         self.notify("Результат сохранён", severity="information")
