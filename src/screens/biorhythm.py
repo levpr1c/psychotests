@@ -1,20 +1,17 @@
 """Biorhythm test screen."""
 
-from datetime import date, datetime
+from datetime import date
 
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.binding import Binding
 from textual.widgets import Header, Footer, Label, Static, Button, Input
 from textual.containers import Vertical, Horizontal
-from rich.table import Table
-from rich.panel import Panel
-from rich.layout import Layout
 
 from src.tests.biorhythm_calc import calculate_biorhythms
 from src.data.interpretations import BIO_INTERPRETATION
 from src.screens.confirm_modal import ConfirmModal
-from src.models.database import save_result
+from src.models.database import get_user, save_result
 from src.models.test_result import TestResultCreate
 
 
@@ -36,8 +33,14 @@ class BiorhythmScreen(Screen):
     def __init__(self, user_id: int):
         super().__init__()
         self.user_id = user_id
+        self.test_completed = False
+        user = get_user(user_id)
+        self.username = user.name if user else "Неизвестный"
 
     def action_back(self):
+        if self.test_completed:
+            self.app.pop_screen()
+            return
         self.app.push_screen(ConfirmModal("Хотите выйти из теста?"), self._on_exit_confirm)
 
     def _on_exit_confirm(self, result: bool):
@@ -47,9 +50,9 @@ class BiorhythmScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         yield Vertical(
+            Label(f"👤 {self.username}", id="user_label"),
             Label("Биоритмы", id="title"),
-            Static("Расчёт физических, эмоциональных и интеллектуальных биоритмов", id="subtitle"),
-            Label("Дата расчёта (ГГГГ-ММ-ДД, по умолчанию сегодня):", id="date_label"),
+            Label("Дата (ГГГГ-ММ-ДД):", id="date_label"),
             Horizontal(
                 Input(id="target_date", value=date.today().isoformat()),
                 Button("Рассчитать", id="calc_btn", variant="primary"),
@@ -64,6 +67,10 @@ class BiorhythmScreen(Screen):
         if event.button.id == "calc_btn":
             self.calculate()
 
+    def on_input_submitted(self, event: Input.Submitted):
+        if event.input.id == "target_date":
+            self.calculate()
+
     def calculate(self):
         target_str = self.query_one("#target_date", Input).value.strip()
         try:
@@ -72,8 +79,6 @@ class BiorhythmScreen(Screen):
             self.notify("Неверный формат даты. Используйте ГГГГ-ММ-ДД", severity="error")
             return
 
-        # Use birth date from user profile or prompt
-        from src.models.database import get_user
         user = get_user(self.user_id)
         if not user or not user.birth_date:
             self.notify("У пользователя не указана дата рождения", severity="error")
@@ -82,33 +87,30 @@ class BiorhythmScreen(Screen):
         birth = user.birth_date
         result = calculate_biorhythms(birth, target)
 
-        table = Table(show_header=True, header_style="bold cyan")
-        table.add_column("Цикл", style="bold")
-        table.add_column("Период (дни)")
-        table.add_column("Значение")
-        table.add_column("Фаза")
-
+        bar_width = 20
         cycle_names = {
             "physical": ("Физический", "🔴"),
             "emotional": ("Эмоциональный", "🟡"),
             "intellectual": ("Интеллектуальный", "🟢"),
         }
 
+        lines = [
+            f"[bold]ДР:[/bold] {birth}  [bold]Расчёт:[/bold] {target}  [bold]Дней:[/bold] {result['days']}"
+        ]
         for key, (name, icon) in cycle_names.items():
             data = result[key]
-            val = f"{data['value']:+.2f}"
+            val = data["value"]
             phase = BIO_INTERPRETATION.get(data["phase"], "")
-            table.add_row(f"{icon} {name}", str(data["period"]), val, phase)
-
-        self.query_one("#result_area", Static).update(
-            Panel(
-                f"[bold]Дата рождения:[/bold] {birth}\n"
-                f"[bold]Дата расчёта:[/bold] {target}\n"
-                f"[bold]Прожито дней:[/bold] {result['days']}\n\n"
-                f"{table}\n\n"
-                "[dim]PgUp/PgDn — смена даты, Home/End — быстрая навигация[/dim]"
+            filled = max(0, min(bar_width, int((val + 1) / 2 * bar_width)))
+            pct = f"{val * 100:+.0f}%"
+            lines.append(
+                f"{icon} [bold]{name}:[/bold] {pct}  "
+                f"[cyan]{'█' * filled}[/cyan][bright_black]{'░' * (bar_width - filled)}[/bright_black]  "
+                f"[dim]{phase}[/dim]"
             )
-        )
+        lines.append("[dim]Enter — рассчитать, Esc — назад[/dim]")
+
+        self.query_one("#result_area", Static).update("\n".join(lines))
 
         flat_scores = {k: v for k, v in result.items() if isinstance(v, (int, float))}
         flat_scores |= {f"{k}_{kk}": vv for k, v in result.items() if isinstance(v, dict) for kk, vv in v.items() if isinstance(vv, (int, float))}
@@ -120,4 +122,5 @@ class BiorhythmScreen(Screen):
                           f"Эмоциональный: {result['emotional']['value']:.2f}, "
                           f"Интеллектуальный: {result['intellectual']['value']:.2f}",
         ))
+        self.test_completed = True
         self.notify("Результат сохранён", severity="information")
