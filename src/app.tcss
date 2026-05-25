@@ -3,9 +3,24 @@ Screen {
 }
 
 #main_content {
-    margin: 1 4;
+    margin: 0 4;
     height: 100%;
     align: center middle;
+    padding: 0;
+}
+
+ScrollableContainer#main_content {
+    margin: 0 2;
+    align: left top;
+}
+
+ScrollableContainer#main_content #title,
+ScrollableContainer#main_content #user_info,
+ScrollableContainer#main_content #chart_area,
+ScrollableContainer#main_content #filter_label,
+ScrollableContainer#main_content #history_heading,
+ScrollableContainer#main_content #results_list Static {
+    text-align: left;
 }
 
 #title {
@@ -16,19 +31,12 @@ Screen {
     padding: 1 0 0 0;
 }
 
-#subtitle {
-    color: $text-muted;
-    width: 100%;
-    text-align: center;
-    padding: 0 0 1 0;
-}
-
 #user_label {
     text-style: bold;
     color: $secondary;
     width: 100%;
     text-align: center;
-    padding: 0 0 1 0;
+    padding: 1 0 1 0;
 }
 
 #question_label {
@@ -52,15 +60,20 @@ Screen {
 }
 
 #nav_buttons {
-    height: 3;
+    height: auto;
     align: center middle;
     width: 100%;
     padding: 0 6;
 }
 
 #color_buttons {
-    height: 10;
+    height: auto;
     align: center middle;
+}
+
+#color_buttons Horizontal {
+    align: center middle;
+    margin: 0;
 }
 
 #color_buttons Button {
@@ -71,6 +84,23 @@ Screen {
 #result_area {
     padding: 1 4;
     width: 100%;
+    text-align: center;
+}
+
+#result_scroll {
+    height: 1fr;
+    width: 100%;
+}
+
+#detail_scroll {
+    height: 1fr;
+    width: 100%;
+}
+
+#detail_content {
+    padding: 1 3;
+    text-align: center;
+    width: 100%;
 }
 
 ListView {
@@ -78,7 +108,7 @@ ListView {
 }
 
 ListItem {
-    padding: 0 1;
+    padding: 0 2;
 }
 
 Button {
@@ -86,43 +116,43 @@ Button {
 }
 
 #actions {
-    height: 3;
+    height: auto;
     align: center middle;
     width: 100%;
+    padding: 1 0;
 }
 
 #new_user {
-    width: 24;
+    width: 28;
 }
 
 #history {
-    width: 16;
+    width: 20;
 }
 
 #progress {
     color: $text-muted;
     width: 100%;
     text-align: center;
+    padding: 0 0 1 0;
 }
 
 #round_label {
     width: 100%;
     text-align: center;
-}
-
-#instruction {
-    width: 100%;
-    text-align: center;
+    padding: 0 0 1 0;
 }
 
 #date_label {
     width: 100%;
     text-align: center;
+    padding: 0 0 1 0;
 }
 
 #date_input_group {
     width: 100%;
     align: center middle;
+    padding: 0;
 }
 
 #target_date {
@@ -138,7 +168,7 @@ Button {
     color: $text;
     width: 100%;
     text-align: center;
-    padding: 0 0 0 0;
+    padding: 0;
 }
 
 #name_label {
@@ -161,9 +191,65 @@ Button {
     align: center middle;
     width: 100%;
     height: auto;
+    padding: 0 0 1 0;
 }
 
 #user_list Label {
     text-align: center;
     width: 100%;
 }
+
+#empty_label {
+    text-style: bold italic;
+    color: $text-disabled;
+    padding: 1 0;
+}
+
+#filter_label {
+    text-style: bold;
+    width: 100%;
+    text-align: center;
+    padding: 0 0 1 0;
+}
+
+#filter_buttons {
+    height: auto;
+    align: center middle;
+    width: 100%;
+    padding: 0 2;
+}
+
+#filter_buttons Button {
+    margin: 0 2;
+}
+
+#test_list {
+    margin: 0 8;
+}
+
+#results_list Static {
+    width: 100%;
+    text-align: center;
+    padding: 0;
+}
+
+#history_heading {
+    text-style: bold;
+    width: 100%;
+    text-align: center;
+    padding: 1 0 0 0;
+}
+
+#user_info {
+    padding: 0 2;
+    width: 100%;
+    text-align: center;
+}
+
+#chart_area {
+    padding: 0 2;
+    width: 100%;
+    text-align: center;
+}
+
+
