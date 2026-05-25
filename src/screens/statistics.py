@@ -21,7 +21,7 @@ from src.models.test_result import TestResult
 from src.screens.result_view import ResultViewScreen
 
 
-def _bar(value: float, max_val: float, width: int = 30) -> Text:
+def _bar(value: float, max_val: float, width: int = 15) -> Text:
     if max_val <= 0:
         return Text("░" * width, style="bright_black")
     filled = int(value / max_val * width)
@@ -58,7 +58,7 @@ def _build_chart(results: list[TestResult]) -> Table:
                 scores_by_test[r.test_name].append(float(val))
 
     table = Table(show_header=False, box=None, padding=(0, 1), collapse_padding=True, expand=True)
-    table.add_column("", no_wrap=True)
+    table.add_column("")
     table.add_column("", no_wrap=True)
     table.add_column("", justify="right", style="bold", no_wrap=True)
 
@@ -193,9 +193,12 @@ class StatisticsScreen(Screen):
                         vals.append(f"{k}={v:.1f}")
                 if vals:
                     first_line = ", ".join(vals[:4])
-            text = f"[{r.created_at.strftime('%d.%m.%Y %H:%M')}] [bold]{r.test_name}[/bold]"
+            text = (
+                f"[dim]{r.created_at.strftime('%d.%m.%Y %H:%M')}[/dim] "
+                f"[bold yellow]{r.test_name}[/bold yellow]"
+            )
             if first_line:
-                text += "\n" + first_line
+                text += f"\n[cyan]{first_line}[/cyan]"
             await list_view.append(
                 ListItem(Static(text), id=f"result_{r.id}")
             )
@@ -223,6 +226,8 @@ class StatisticsScreen(Screen):
                 self._show_detail(result)
 
     def _show_detail(self, result: TestResult):
+        from rich.panel import Panel
+
         if result.test_name == "Цветовой тест Люшера" and result.raw_data:
             self._show_luscher_detail(result)
             return
@@ -234,16 +239,16 @@ class StatisticsScreen(Screen):
             else:
                 scores_text += f"{k}: {v}\n"
 
-        detail = (
-            f"[bold]Тест:[/bold] {result.test_name}\n"
+        body = (
             f"[bold]Дата:[/bold] {result.created_at.strftime('%d.%m.%Y %H:%M')}\n"
             f"[bold]Пользователь:[/bold] #{result.user_id}\n"
         )
         if scores_text:
-            detail += f"\n[bold]Показатели:[/bold]\n{scores_text}\n"
+            body += f"\n[bold cyan]Показатели:[/bold cyan]\n{scores_text}\n"
         if result.interpretation:
-            detail += f"\n[bold]Интерпретация:[/bold]\n{result.interpretation}"
+            body += f"\n[bold cyan]Интерпретация:[/bold cyan]\n{result.interpretation}"
 
+        detail = Panel(body, title=result.test_name, border_style="cyan")
         self.app.push_screen(ResultViewScreen("Результат", detail))
 
     def _show_luscher_detail(self, result: TestResult):

@@ -21,10 +21,10 @@ class EconomyScreen(BaseTestScreen):
         self.query_one("#question_label", Static).update("")
         self.query_one("#answer_set").disabled = True
         self.query_one("#nav_buttons").display = False
-        self.query_one("#result_area", Static).update(
-            f"[bold]Результат: Деловая сфера[/bold]\n\n"
-            f"Общий балл: {result['total']}\n\n"
-            f"{interpretation}"
+        self._show_result(
+            f"[bold yellow]Общий балл:[/bold yellow] [cyan]{result['total']}[/cyan]\n\n{interpretation}",
+            title="Деловая сфера",
+            border_style="blue",
         )
 
         save_result(TestResultCreate(

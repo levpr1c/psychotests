@@ -1,5 +1,7 @@
 """Luscher Color Test screen."""
 
+import random
+
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.binding import Binding
@@ -82,6 +84,7 @@ class LuscherScreen(Screen):
         self.choices2: list[int] = []
         self.current_rank = 0
         self.test_completed = False
+        self.color_positions = list(range(8))
         user = get_user(user_id)
         self.username = user.name if user else "Неизвестный"
 
@@ -101,19 +104,11 @@ class LuscherScreen(Screen):
             Label(f"👤 {self.username}", id="user_label"),
             Label("Цветовой тест Люшера", id="title"),
             Static(id="round_label"),
-            Vertical(
-                Horizontal(
-                    Button(id="color_0"),
-                    Button(id="color_1"),
-                    Button(id="color_2"),
-                    Button(id="color_3"),
-                ),
-                Horizontal(
-                    Button(id="color_4"),
-                    Button(id="color_5"),
-                    Button(id="color_6"),
-                    Button(id="color_7"),
-                ),
+            Horizontal(
+                Button(id="color_0"), Button(id="color_1"),
+                Button(id="color_2"), Button(id="color_3"),
+                Button(id="color_4"), Button(id="color_5"),
+                Button(id="color_6"), Button(id="color_7"),
                 id="color_buttons",
             ),
             Static(id="progress"),
@@ -124,28 +119,31 @@ class LuscherScreen(Screen):
 
     def _setup_button(self, btn: Button, color: int, pos: int, visible: bool):
         if visible:
-            name = COLOR_NAMES_RU[color]
+            name = COLOR_NAMES_RU[color][:4]
             bg = COLOR_BG[color]
             fg = COLOR_FG[color]
-            btn.label = f"{pos+1}. {name}"
+            btn.label = f"{pos+1}.{name}"
             btn.styles.background = bg
             btn.styles.color = fg
-            btn.styles.width = 14
+            btn.styles.width = 8
         btn.display = visible
 
     def _rebuild_buttons(self):
         visible = set(self.remaining_colors)
-        for color in range(8):
-            btn = self.query_one(f"#color_{color}", Button)
+        visual_rank = 0
+        for pos in range(8):
+            color = self.color_positions[pos]
+            btn = self.query_one(f"#color_{pos}", Button)
             if color in visible:
-                pos = self.remaining_colors.index(color)
-                self._setup_button(btn, color, pos, True)
+                self._setup_button(btn, color, visual_rank, True)
+                visual_rank += 1
             else:
                 self._setup_button(btn, color, 0, False)
 
     def start_round(self):
         self.current_rank = 0
         self.remaining_colors = list(range(8))
+        random.shuffle(self.color_positions)
         self._rebuild_buttons()
         self.show_colors()
 
@@ -163,10 +161,10 @@ class LuscherScreen(Screen):
         self.query_one("#result_area", Static).update("")
 
     def _select_by_number(self, num: int):
-        if num < 0 or num >= len(self.remaining_colors):
+        visible = [c for c in self.color_positions if c in set(self.remaining_colors)]
+        if num < 0 or num >= len(visible):
             return
-        color = self.remaining_colors[num]
-        self.select_color(color)
+        self.select_color(visible[num])
 
     def action_select_1(self): self._select_by_number(0)
     def action_select_2(self): self._select_by_number(1)
@@ -179,7 +177,8 @@ class LuscherScreen(Screen):
 
     def on_button_pressed(self, event: Button.Pressed):
         if event.button.id and event.button.id.startswith("color_"):
-            color = int(event.button.id.split("_")[1])
+            pos = int(event.button.id.split("_")[1])
+            color = self.color_positions[pos]
             self.select_color(color)
 
     def select_color(self, color: int):
@@ -225,7 +224,7 @@ class LuscherScreen(Screen):
             result["consistency"],
         )
 
-        self.query_one("#color_buttons", Vertical).display = False
+        self.query_one("#color_buttons", Horizontal).display = False
         self.query_one("#round_label", Static).update("[bold]Тест завершён[/bold]")
         self.query_one("#progress", Static).update("")
 
@@ -243,21 +242,23 @@ class LuscherScreen(Screen):
             )
 
         stats = (
-            f"Тревожность: {result['anxiety_pct']:.0f}%  |  "
-            f"Компенсация: {result['compensation_pct']:.0f}%  |  "
-            f"Активность: {result['activity_pct']:.0f}%  |  "
-            f"Работоспособность: {result['performance_pct']:.0f}%  |  "
-            f"Вегетатика: {result['vegetative_pct']:.0f}%"
+            f"[bold yellow]Тревожность:[/bold yellow] [cyan]{result['anxiety_pct']:.0f}%[/cyan]  |  "
+            f"[bold yellow]Компенсация:[/bold yellow] [cyan]{result['compensation_pct']:.0f}%[/cyan]  |  "
+            f"[bold yellow]Активность:[/bold yellow] [cyan]{result['activity_pct']:.0f}%[/cyan]  |  "
+            f"[bold yellow]Работоспособность:[/bold yellow] [cyan]{result['performance_pct']:.0f}%[/cyan]  |  "
+            f"[bold yellow]Вегетатика:[/bold yellow] [cyan]{result['vegetative_pct']:.0f}%[/cyan]"
         )
 
         group = Group(
             Panel(table, title="Ваш выбор цветов", padding=(0, 1)),
             Text(""),
-            Text(stats, style="bold cyan"),
+            Text.from_markup(stats),
             Text(""),
             Panel(interpretation, title="Интерпретация", padding=(0, 1)),
         )
-        self.query_one("#result_area", Static).update(group)
+        self.query_one("#result_area", Static).update(
+            Panel(group, title="Цветовой тест Люшера", border_style="magenta", padding=(0, 1))
+        )
         self.notify("Результат сохранён", severity="information")
 
         flat_scores = {k: v for k, v in result.items() if isinstance(v, (int, float))}

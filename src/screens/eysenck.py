@@ -172,7 +172,10 @@ class EysenckScreen(Screen):
         self.query_one("#question_label", Label).update("")
         self.query_one("#answer_set", RadioSet).disabled = True
         self.query_one("#nav_buttons", Horizontal).display = False
-        self.query_one("#result_area", Static).update(interpretation)
+        from rich.panel import Panel
+        self.query_one("#result_area", Static).update(
+            Panel(interpretation, title="Тест Айзенка (EPI)", border_style="cyan", padding=(0, 1))
+        )
 
         save_result(TestResultCreate(
             user_id=self.user_id,

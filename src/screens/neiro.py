@@ -21,11 +21,11 @@ class NeiroScreen(BaseTestScreen):
         self.query_one("#question_label", Static).update("")
         self.query_one("#answer_set").disabled = True
         self.query_one("#nav_buttons").display = False
-        self.query_one("#result_area", Static).update(
-            f"[bold]Результат неврологического теста[/bold]\n\n"
-            f"Общий балл: {result['total']}\n"
-            f"Уровень: {result['level']}\n\n"
-            f"{interpretation}"
+        self._show_result(
+            f"[bold yellow]Общий балл:[/bold yellow] [cyan]{result['total']}[/cyan]\n"
+            f"[bold yellow]Уровень:[/bold yellow] [cyan]{result['level']}[/cyan]\n\n{interpretation}",
+            title="Неврологический тест",
+            border_style="green",
         )
 
         save_result(TestResultCreate(

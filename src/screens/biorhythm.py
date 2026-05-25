@@ -97,20 +97,26 @@ class BiorhythmScreen(Screen):
         lines = [
             f"[bold]ДР:[/bold] {birth}  [bold]Расчёт:[/bold] {target}  [bold]Дней:[/bold] {result['days']}"
         ]
+        name_width = max(len(n) for n, _ in cycle_names.values()) + 1
         for key, (name, icon) in cycle_names.items():
             data = result[key]
             val = data["value"]
             phase = BIO_INTERPRETATION.get(data["phase"], "")
             filled = max(0, min(bar_width, int((val + 1) / 2 * bar_width)))
             pct = f"{val * 100:+.0f}%"
+            name_col = f"{name}:".ljust(name_width)
+            pct_col = pct.rjust(6)
             lines.append(
-                f"{icon} [bold]{name}:[/bold] {pct}  "
+                f"{icon} [bold]{name_col}[/bold] {pct_col}  "
                 f"[cyan]{'█' * filled}[/cyan][bright_black]{'░' * (bar_width - filled)}[/bright_black]  "
                 f"[dim]{phase}[/dim]"
             )
         lines.append("[dim]Enter — рассчитать, Esc — назад[/dim]")
 
-        self.query_one("#result_area", Static).update("\n".join(lines))
+        from rich.panel import Panel
+        self.query_one("#result_area", Static).update(
+            Panel("\n".join(lines), title="Биоритмы", border_style="cyan", padding=(0, 1))
+        )
 
         flat_scores = {k: v for k, v in result.items() if isinstance(v, (int, float))}
         flat_scores |= {f"{k}_{kk}": vv for k, v in result.items() if isinstance(v, dict) for kk, vv in v.items() if isinstance(vv, (int, float))}

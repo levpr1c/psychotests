@@ -211,6 +211,12 @@ class BaseTestScreen(Screen):
             else:
                 self.app.push_screen(ConfirmModal("Хотите выйти из теста?"), self._on_exit_confirm)
 
+    def _show_result(self, text: str, title: str = "Результат", border_style: str = "cyan"):
+        from rich.panel import Panel
+        self.query_one("#result_area", Static).update(
+            Panel(text, title=title, border_style=border_style, padding=(0, 1))
+        )
+
     def finish_test(self):
         self.test_completed = True
         raise NotImplementedError

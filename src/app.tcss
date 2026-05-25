@@ -28,7 +28,7 @@ ScrollableContainer#main_content #results_list Static {
     color: $text-accent;
     width: 100%;
     text-align: center;
-    padding: 1 0 0 0;
+    padding: 0;
 }
 
 #user_label {
@@ -44,6 +44,7 @@ ScrollableContainer#main_content #results_list Static {
     width: 100%;
     text-align: center;
     padding: 1 4;
+    color: $text-accent;
 }
 
 #key_legend {
@@ -51,10 +52,11 @@ ScrollableContainer#main_content #results_list Static {
     width: 100%;
     text-align: center;
     padding: 0 6 1 6;
+    text-style: italic;
 }
 
 #answer_set {
-    padding: 1 6;
+    padding: 0 3;
     align: center middle;
     width: 100%;
 }
@@ -63,28 +65,29 @@ ScrollableContainer#main_content #results_list Static {
     height: auto;
     align: center middle;
     width: 100%;
-    padding: 0 6;
+    padding: 1 6 0 6;
+}
+
+#nav_buttons Button {
+    margin: 0 2;
 }
 
 #color_buttons {
     height: auto;
     align: center middle;
-}
-
-#color_buttons Horizontal {
-    align: center middle;
-    margin: 0;
+    width: 100%;
+    padding: 0 1;
 }
 
 #color_buttons Button {
-    min-width: 20;
+    min-width: 8;
     margin: 0 1;
 }
 
 #result_area {
     padding: 1 4;
     width: 100%;
-    text-align: center;
+    text-align: left;
 }
 
 #result_scroll {
@@ -113,6 +116,14 @@ ListItem {
 
 Button {
     margin: 0 1;
+}
+
+Button:hover {
+    text-style: bold;
+}
+
+Button:focus {
+    text-style: bold reverse;
 }
 
 #actions {
@@ -210,6 +221,7 @@ Button {
     width: 100%;
     text-align: center;
     padding: 0 0 1 0;
+    color: $secondary;
 }
 
 #filter_buttons {
@@ -238,6 +250,7 @@ Button {
     width: 100%;
     text-align: center;
     padding: 1 0 0 0;
+    color: $secondary;
 }
 
 #user_info {

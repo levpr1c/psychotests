@@ -35,7 +35,7 @@ class HeartScreen(BaseTestScreen):
         self.query_one("#question_label", Static).update("")
         self.query_one("#answer_set").disabled = True
         self.query_one("#nav_buttons").display = False
-        self.query_one("#result_area", Static).update(interpretation)
+        self._show_result(interpretation, title="Сердечно-сосудистая система")
 
         save_result(TestResultCreate(
             user_id=self.user_id,

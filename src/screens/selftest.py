@@ -21,10 +21,10 @@ class SelftestScreen(BaseTestScreen):
         self.query_one("#question_label", Static).update("")
         self.query_one("#answer_set").disabled = True
         self.query_one("#nav_buttons").display = False
-        self.query_one("#result_area", Static).update(
-            f"[bold]Результат оценки самооценки[/bold]\n\n"
-            f"Общий балл: {result['total']}\n\n"
-            f"{interpretation}"
+        self._show_result(
+            f"[bold yellow]Общий балл:[/bold yellow] [cyan]{result['total']}[/cyan]\n\n{interpretation}",
+            title="Самооценка",
+            border_style="green",
         )
 
         save_result(TestResultCreate(
