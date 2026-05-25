@@ -10,9 +10,10 @@ flowchart TD
 
     src/app.py -->|push_screen user_select| src/screens/user_select.py
     src/app.py -->|SCREENS dict| src/screens/user_create.py
-    src/app.py -->|SCREENS dict| src/screens/history.py
 
-    src/screens/user_select.py -->|выбрать пользователя| src/screens/main_menu.py
+    src/screens/user_select.py -->|выбрать| src/screens/main_menu.py
+    src/screens/user_select.py -->|статистика| src/screens/statistics.py
+
     src/screens/main_menu.py -->|выбрать тест| src/screens/biorhythm.py
     src/screens/main_menu.py -->|выбрать тест| src/screens/eysenck.py
     src/screens/main_menu.py -->|выбрать тест| src/screens/stress.py
@@ -34,6 +35,7 @@ flowchart TD
     src/screens/confirm_modal.py -.->|подтверждение| src/screens/main_menu.py
     src/screens/confirm_modal.py -.->|подтверждение| src/screens/_base_test.py
     src/screens/confirm_modal.py -.->|подтверждение| src/screens/biorhythm.py
+    src/screens/confirm_modal.py -.->|подтверждение| src/screens/luscher.py
 ```
 
 ## 2. Поток пользователя
@@ -42,13 +44,15 @@ flowchart TD
 flowchart LR
     A[UserSelectScreen] -->|создать| B[UserCreateScreen]
     A -->|выбрать| C[MainMenuScreen]
-    A -->|история| D[HistoryScreen]
-    C -->|тест 1-9| E[TestScreen]
-    E -->|finish_test| F[Сохранение в SQLite]
-    F -->|pop_screen| C
-    E -->|escape| G[ConfirmModal]
-    G -->|Да| C
-    G -->|Нет| E
+    A -->|статистика| D[StatisticsScreen]
+    D -->|фильтр по тесту| D
+    D -->|выбрать результат| E[ResultViewScreen]
+    C -->|тест 1-9| F[TestScreen]
+    F -->|finish_test| G[Сохранение в SQLite]
+    G -->|pop_screen| C
+    F -->|escape| H[ConfirmModal]
+    H -->|Да| C
+    H -->|Нет| F
 ```
 
 ## 3. Навигация и клавиши
@@ -70,7 +74,7 @@ flowchart TD
     subgraph TestScreen-level
         UP["↑/←"] --> FocusPrev["focus_previous (intelligent)"]
         DOWN["↓/→"] --> FocusNext["focus_next (intelligent)"]
-        NUM["1-5 / 1-2"] --> Select["выбрать ответ"]
+        NUM["1-5 / 1-2 / 1-8"] --> Select["выбрать ответ"]
         ENTER["enter (priority)"] --> NextOrBack["action_next или действие кнопки"]
     end
 ```
@@ -126,7 +130,8 @@ classDiagram
     Screen <|-- MainMenuScreen
     Screen <|-- UserSelectScreen
     Screen <|-- UserCreateScreen
-    Screen <|-- HistoryScreen
+    Screen <|-- StatisticsScreen
+    Screen <|-- ResultViewScreen
     BaseTestScreen <|-- StressScreen
     BaseTestScreen <|-- NeiroScreen
     BaseTestScreen <|-- ConnectScreen
@@ -173,73 +178,89 @@ Pydantic-модели:
 | Тест | Экран | Вопросов | Расчёт | Модуль |
 |------|-------|----------|--------|--------|
 | Биоритмы | `BiorhythmScreen` | — (расчёт по дате) | sin-циклы 23/28/33 дня | `biorhythm_calc.py` |
-| Айзенк EPI | `EysenckScreen` | 57 (24E/24N/9L) | Да/Нет → баллы по шкалам | `eysenck_calc.py` |
-| Стресс | `StressScreen` | 24 × Likert 1-5 | Сумма + уровни | `stress_calc.py` |
-| Неврология | `NeiroScreen` | 24 × Likert 1-5 | Сумма + уровни | `neiro_calc.py` |
-| Совместимость | `ConnectScreen` | 25 × Likert 1-5 | Инвертированные + среднее × 20 | `connect_calc.py` |
-| Деловая сфера | `EconomyScreen` | 25 × Likert 1-5 | Инвертированные + среднее × 20 | `economy_calc.py` |
-| Сердечно-сосуд. | `HeartScreen` | 25 × Likert 1-5 | 6 шкал (IBC/PPS/DE/AG/NCD/ZM) | `heart_calc.py` |
-| Самооценка | `SelftestScreen` | 20 × Likert 1-5 | Инвертированные + среднее × 25 | `selftest_calc.py` |
+| Айзенк EPI | `EysenckScreen` | 57 (24E/24N/9L), shuffled | Да/Нет → баллы по шкалам | `eysenck_calc.py` |
+| Стресс | `StressScreen` | 24 × Likert 1-5, shuffled | Сумма + уровни | `stress_calc.py` |
+| Неврология | `NeiroScreen` | 24 × Likert 1-5, shuffled | Сумма + уровни | `neiro_calc.py` |
+| Совместимость | `ConnectScreen` | 25 × Likert 1-5, shuffled | Инвертированные + среднее × 20 | `connect_calc.py` |
+| Деловая сфера | `EconomyScreen` | 25 × Likert 1-5, shuffled | Инвертированные + среднее × 20 | `economy_calc.py` |
+| Сердечно-сосуд. | `HeartScreen` | 25 × Likert 1-5, shuffled by scale | 6 шкал (IBC/PPS/DE/AG/NCD/ZM) | `heart_calc.py` |
+| Самооценка | `SelftestScreen` | 20 × Likert 1-5, shuffled | Инвертированные + среднее × 25 | `selftest_calc.py` |
 | Люшер | `LuscherScreen` | 2 раунда × 8 цветов | Тревога/компенсация/активность/работоспособность/вегетатика/консистентность | `luscher_calc.py` |
 
 ## 7. Исправленные баги (по аудиту)
 
 | # | Файл | Баг | Исправление |
 |---|------|-----|-------------|
-| 1 | `history.py:29-41` | `on_mount` sync, `list_view.append()` без `await` → race condition / `DuplicateIds` | `async def on_mount`, `await` для всех `append` |
-| 2 | `eysenck.py:152-154` | Мёртвый код: второй `elif event.button.id == "prev_btn"` никогда не выполняется | Удалён |
-| 3 | `biorhythm.py` | Результат не сохранялся в БД (в отличие от всех остальных тестов) | Добавлен `save_result` после расчёта |
-| 4 | `luscher_calc.py:42` | `list.index(x)` падает если цвет не встречается (дубликаты) | Заменён на `_safe_index` с default 4 |
-| 5 | `luscher_calc.py:69` | `choices1.index(1)` падает если цвета 1 нет | Заменён на `_safe_index` |
-| 6 | `heart_calc.py:11` | `ZeroDivisionError` при пустом списке ответов для шкалы | Проверка `if not values` |
+| 1 | `history.py:29-41` | `on_mount` sync, `list_view.append()` без `await` → `DuplicateIds` | `async def on_mount`, `await` для всех `append` |
+| 2 | `eysenck.py:152-154` | Мёртвый код: второй `elif event.button.id == "prev_btn"` | Удалён |
+| 3 | `biorhythm.py` | Результат не сохранялся в БД | Добавлен `save_result` после расчёта |
+| 4 | `luscher_calc.py:42` | `list.index(x)` падает при дубликатах цветов | `_safe_index` с default 4 |
+| 5 | `heart_calc.py:11` | `ZeroDivisionError` при пустом списке ответов шкалы | Проверка `if not values` |
+| 6 | `database.py` | `DB_PATH` в PyInstaller ведёт в temp | `platformdirs` при `sys.frozen` |
+| 7 | `stress/neiro/connect/economy/heart/selftest.py` | Отсутствует `self.test_completed = True` в `finish_test()` | Добавлен флаг |
+| 8 | `stress/neiro/connect/economy/selftest.py` | `Static.update()` с Markdown вместо Rich | Заменён на Rich-разметку |
+| 9 | `_base_test.py` + `eysenck.py` | `action_next()` и `_select_num()` без guard `test_completed` | Добавлена проверка |
+| 10 | `app.tcss` | `#date_label` без `width: 100%` | Добавлен |
+| 11 | `luscher.py` | `_rebuild_buttons()` через `remove_children()+mount()` → `DuplicateIds` | In-place style update |
+| 12 | `app.py` | `StatisticsScreen` в `SCREENS` dict → кеширование устаревших данных | Удалён из dict, новый instance |
 
-## 8. Ключевые изменения (хронология)
+## 8. StatisticsScreen
 
-1. **Reverse-engineering** — анализ 8 COM-бинарников Turbo Pascal, документация в `docs/analysis.md`
-2. **Скелет TUI** — Textual App, SCREENS dict, user_select/user_create/main_menu
-3. **BaseTestScreen** — общий класс для Likert-тестов (1-5), RadioSet + key_legend + arrow nav
-4. **EysenckScreen** — отдельный экран (RadioSet на 2 кнопки, bool-ответы)
-5. **Fixed `action_back`** — сделан async, `await action_quit()` вместо прямого `exit()`
-6. **RadioSet reset** — `_clear_radio()` через приватные `_pressed_button`/`_selected` с `prevent(Changed)`
-7. **Intelligent arrow nav** — RadioSet: стрелки навигация внутри, на границе → `focus_next`/`focus_previous`
-8. **Enter key** — `priority=True` на всех тестовых экранах (перехват ДО RadioSet)
-9. **`action_next`** — проверка `focused.id == "prev_btn"` → идёт назад
-10. **ConfirmModal** — переписан на `Screen` (не `ModalScreen`), CSS самодостаточный
-11. **HistoryScreen** — async on_mount, await list_view.append
-12. **Biorhythm** — добавлен `save_result`
-13. **Luscher** — `_safe_index` защита от ValueError
-14. **Heart calc** — защита от `ZeroDivisionError`
-15. **scores** — `dict[str, Any]` (был `dict[str, float]`)
+Экран статистики (заменяет удалённый `history.py`). Показывает:
 
-## 9. Тестовое покрытие (68 тестов, 0 падений)
+1. **Информация о пользователе** — имя текущего пользователя или "Все пользователи"
+2. **Диаграмма** — горизонтальные баровые графики (Unicode-блоки) с количеством прохождений по каждому тесту и средним баллом
+3. **Фильтр по тесту** — кнопки "Все" + по каждому типу теста; фильтрует список результатов
+4. **Список результатов** — история с датой, названием и краткой интерпретацией; каждый элемент — `ListItem` с одним `Static` (Rich-разметка, дата+название на первой строке, интерпретация/баллы на второй)
+5. **Детали результата** — при выборе элемента открывается `ResultViewScreen` с полными показателями и интерпретацией; для Люшера — таблица цветов через `_show_luscher_detail()`
+
+```mermaid
+flowchart LR
+    A[StatisticsScreen on_mount] --> B[get_results_for_user / get_all_results]
+    B --> C[_build_chart: counts + avg, Table expand=True]
+    C --> D[показать Panel с Table]
+    D --> E[кнопки фильтра]
+    E --> F[_refresh_list]
+    F --> G[ListView с многострочными ListItem]
+    G -->|выбор| H[ResultViewScreen / _show_luscher_detail]
+```
+
+## 9. Перемешивание вопросов
+
+`shuffle_questions()` в `_base_test.py` — модульная функция. Если передан `key_fn`, группирует по ключу (шкала), сортирует группы по размеру, интерливит — одинаковые шкалы не идут подряд. Без `key_fn` — `random.shuffle`.
+
+- **EysenckScreen**: `self._questions = shuffle_questions(EYSENCK_QUESTIONS, key_fn=lambda q: q[1])`
+- **BaseTestScreen**: shuffles `self.QUESTIONS` (и `self.SCALES` если есть) в `on_mount`
+
+## 10. Тестовое покрытие (147 тестов, 0 падений)
 
 ```mermaid
 pie title Распределение тестов
-    "Расчёты + граничные" : 25
-    "Интерпретации" : 10
-    "БД + модели" : 9
-    "Импорты + структура" : 10
-    "UI интеграционные" : 14
+    "Расчёты + граничные" : 45
+    "Интерпретации" : 18
+    "БД + модели" : 14
+    "Импорты + структура" : 12
+    "UI интеграционные" : 16
 ```
 
-## 10. Зависимости
+## 11. Зависимости
 
-- **textual** ≥ 2.0.0 (фактически 8.2.7) — TUI framework
+- **textual** 8.x — TUI framework
 - **pydantic** ≥ 2.0.0 — модели данных с валидацией
 - **rich** ≥ 13.0.0 — форматирование (таблицы, панели)
 - **SQLite3** — встроенная БД (без ORM)
 
-## 11. Запуск и тестирование
+## 12. Запуск и тестирование
 
 ```bash
 # Запуск
-venv/bin/python3 run.py
+./venv/bin/python run.py
 
 # Тесты
-venv/bin/python3 tests.py
+./venv/bin/python tests.py
 
 # Очистка кэша после изменений
 find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null
 ```
 
-Shell пользователя — **fish**; `source venv/bin/activate` не работает. Использовать `venv/bin/python3` напрямую.
+Shell — **fish**; `source venv/bin/activate` не работает. Использовать `venv/bin/python3` напрямую.
