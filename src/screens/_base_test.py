@@ -1,12 +1,42 @@
 """Base questionnaire screen for Likert-scale tests."""
 
+import random
+
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.binding import Binding
 from textual.widgets import Header, Footer, Label, Button, RadioSet, RadioButton, Static
-from textual.containers import Vertical, Horizontal, ScrollableContainer
+from textual.containers import Vertical, Horizontal
 
 from src.screens.confirm_modal import ConfirmModal
+from src.models.database import get_user
+
+
+def shuffle_questions(
+    items: list,
+    key_fn=None,
+) -> list:
+    """Shuffle items, spreading same-key items apart if key_fn is provided."""
+    items = list(items)
+    if key_fn is None:
+        random.shuffle(items)
+        return items
+
+    groups = {}
+    for item in items:
+        k = key_fn(item)
+        groups.setdefault(k, []).append(item)
+
+    for g in groups.values():
+        random.shuffle(g)
+
+    sorted_groups = sorted(groups.values(), key=len, reverse=True)
+    result = []
+    while any(sorted_groups):
+        for group in sorted_groups:
+            if group:
+                result.append(group.pop(0))
+    return result
 
 
 class BaseTestScreen(Screen):
@@ -28,8 +58,6 @@ class BaseTestScreen(Screen):
 
     QUESTIONS: list[str] = []
     TITLE = ""
-    SUBTITLE = ""
-    INVERTED: set[int] = set()
 
     def action_focus_next(self):
         focused = self.focused
@@ -56,12 +84,14 @@ class BaseTestScreen(Screen):
         self.answers: list[int] = []
         self.current_answer: int | None = None
         self.test_completed: bool = False
+        user = get_user(user_id)
+        self.username = user.name if user else "Неизвестный"
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield ScrollableContainer(
+        yield Vertical(
+            Label(f"👤 {self.username}", id="user_label"),
             Label(self.TITLE, id="title"),
-            Static(self.SUBTITLE, id="subtitle"),
             Label(id="question_label"),
             Static("1—Нет  2—Скорее нет  3—Не знаю  4—Скорее да  5—Да", id="key_legend"),
             RadioSet(
@@ -91,6 +121,13 @@ class BaseTestScreen(Screen):
         radio._selected = None
 
     def on_mount(self):
+        if hasattr(self, "SCALES") and self.SCALES:
+            pairs = list(zip(list(self.QUESTIONS), list(self.SCALES)))
+            pairs = shuffle_questions(pairs, key_fn=lambda p: p[1])
+            self.QUESTIONS = [p[0] for p in pairs]
+            self.SCALES = [p[1] for p in pairs]
+        else:
+            self.QUESTIONS = shuffle_questions(list(self.QUESTIONS))
         self.show_question()
 
     def show_question(self):
@@ -99,7 +136,7 @@ class BaseTestScreen(Screen):
             return
 
         self.query_one("#question_label", Label).update(
-            f"Вопрос {self.current_q + 1} из {len(self.QUESTIONS)}: {self.QUESTIONS[self.current_q]}"
+            f"{self.current_q + 1}/{len(self.QUESTIONS)}: {self.QUESTIONS[self.current_q]}"
         )
         self.query_one("#answer_set", RadioSet).disabled = False
         self._clear_radio()
@@ -122,6 +159,8 @@ class BaseTestScreen(Screen):
             self.app.pop_screen()
 
     def action_next(self):
+        if self.test_completed:
+            return
         focused = self.focused
         if focused and focused.id == "prev_btn":
             if self.current_q > 0:
@@ -138,6 +177,8 @@ class BaseTestScreen(Screen):
         self.show_question()
 
     def _select_num(self, index: int):
+        if self.test_completed:
+            return
         radio = self.query_one("#answer_set", RadioSet)
         buttons = list(radio.query(RadioButton))
         if 0 <= index < len(buttons):

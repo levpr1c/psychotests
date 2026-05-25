@@ -4,7 +4,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.binding import Binding
 from textual.widgets import Header, Footer, Label, Button, RadioSet, RadioButton, Static
-from textual.containers import Vertical, Horizontal, ScrollableContainer
+from textual.containers import Vertical, Horizontal
 
 from src.data.questions import EYSENCK_QUESTIONS
 from src.tests.eysenck_calc import score_eysenck
@@ -12,6 +12,8 @@ from src.data.interpretations import get_eysenck_interpretation
 from src.models.database import save_result
 from src.models.test_result import TestResultCreate
 from src.screens.confirm_modal import ConfirmModal
+from src.models.database import get_user
+from src.screens._base_test import shuffle_questions
 
 
 class EysenckScreen(Screen):
@@ -50,12 +52,15 @@ class EysenckScreen(Screen):
         self.current_q = 0
         self.answers: list[bool] = []
         self.current_answer: int | None = None
+        self.test_completed = False
+        user = get_user(user_id)
+        self.username = user.name if user else "Неизвестный"
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield ScrollableContainer(
+        yield Vertical(
+            Label(f"👤 {self.username}", id="user_label"),
             Label("Тест Айзенка (EPI)", id="title"),
-            Static("Ответьте 'Да' или 'Нет' на каждый вопрос", id="subtitle"),
             Label(id="question_label"),
             Static("1 — Да    2 — Нет", id="key_legend"),
             RadioSet(
@@ -82,16 +87,17 @@ class EysenckScreen(Screen):
         radio._selected = None
 
     def on_mount(self):
+        self._questions = shuffle_questions(EYSENCK_QUESTIONS, key_fn=lambda q: q[1])
         self.show_question()
 
     def show_question(self):
-        if self.current_q >= len(EYSENCK_QUESTIONS):
+        if self.current_q >= len(self._questions):
             self.finish_test()
             return
 
-        q_text, scale = EYSENCK_QUESTIONS[self.current_q]
+        q_text, scale = self._questions[self.current_q]
         self.query_one("#question_label", Label).update(
-            f"Вопрос {self.current_q + 1} из {len(EYSENCK_QUESTIONS)} [{scale}]: {q_text}"
+            f"{self.current_q + 1}/{len(self._questions)} [{scale}]: {q_text}"
         )
         self._clear_radio()
         self.current_answer = None
@@ -101,6 +107,9 @@ class EysenckScreen(Screen):
         self.current_answer = event.index
 
     def action_back(self):
+        if self.test_completed:
+            self.app.pop_screen()
+            return
         self.app.push_screen(ConfirmModal("Хотите выйти из теста?"), self._on_exit_confirm)
 
     def _on_exit_confirm(self, result: bool):
@@ -108,6 +117,8 @@ class EysenckScreen(Screen):
             self.app.pop_screen()
 
     def action_next(self):
+        if self.test_completed:
+            return
         focused = self.focused
         if focused and focused.id == "prev_btn":
             if self.current_q > 0:
@@ -124,6 +135,8 @@ class EysenckScreen(Screen):
         self.show_question()
 
     def _select_num(self, index: int):
+        if self.test_completed:
+            return
         radio = self.query_one("#answer_set", RadioSet)
         buttons = list(radio.query(RadioButton))
         with radio.prevent(RadioButton.Changed):
@@ -150,7 +163,7 @@ class EysenckScreen(Screen):
                 self.app.push_screen(ConfirmModal("Хотите выйти из теста?"), self._on_exit_confirm)
 
     def finish_test(self):
-        scales = [s for _, s in EYSENCK_QUESTIONS]
+        scales = [s for _, s in self._questions]
         result = score_eysenck(self.answers, scales)
         interpretation = get_eysenck_interpretation(
             result["extraversion"], result["neuroticism"], result["lie"]
@@ -168,4 +181,5 @@ class EysenckScreen(Screen):
             interpretation=interpretation,
         ))
 
+        self.test_completed = True
         self.notify("Результат сохранён", severity="information")
