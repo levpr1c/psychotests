@@ -3,7 +3,7 @@
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.binding import Binding
-from textual.widgets import Header, Footer, ListView, ListItem, Label, Static
+from textual.widgets import Header, Footer, ListView, ListItem, Label
 from textual.containers import Vertical
 
 from src.screens.biorhythm import BiorhythmScreen

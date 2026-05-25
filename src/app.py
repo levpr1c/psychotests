@@ -3,10 +3,8 @@
 from textual.app import App
 from textual.binding import Binding
 
-from src.screens.main_menu import MainMenuScreen
 from src.screens.user_select import UserSelectScreen
 from src.screens.user_create import UserCreateScreen
-from src.screens.history import HistoryScreen
 from src.screens.confirm_modal import ConfirmModal
 
 
@@ -18,7 +16,6 @@ class PsychoApp(App):
     SCREENS = {
         "user_select": UserSelectScreen,
         "user_create": UserCreateScreen,
-        "history": HistoryScreen,
     }
 
     BINDINGS = [

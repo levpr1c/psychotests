@@ -6,8 +6,9 @@ from textual.binding import Binding
 from textual.widgets import Header, Footer, ListView, ListItem, Label, Button
 from textual.containers import Vertical, Horizontal
 
-from src.models.database import get_all_users, delete_user
+from src.models.database import get_all_users
 from src.screens.main_menu import MainMenuScreen
+from src.screens.statistics import StatisticsScreen
 from src.screens.confirm_modal import ConfirmModal
 
 
@@ -71,7 +72,7 @@ class UserSelectScreen(Screen):
             ListView(id="user_list"),
             Horizontal(
                 Button("Новый пользователь", id="new_user", variant="primary"),
-                Button("История", id="history", variant="default"),
+                Button("Статистика", id="history", variant="default"),
                 id="actions",
             ),
             id="main_content",
@@ -106,7 +107,7 @@ class UserSelectScreen(Screen):
         if event.button.id == "new_user":
             self.app.push_screen("user_create", self._on_user_created)
         elif event.button.id == "history":
-            self.app.push_screen("history")
+            self.app.push_screen(StatisticsScreen())
 
     async def _on_user_created(self, result):
         if result:
