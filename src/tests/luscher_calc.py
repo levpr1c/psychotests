@@ -7,18 +7,6 @@ reverse-engineered parameters from LUSHER.EXE / LUSHER.INT.
 import math
 
 
-COLORS = {
-    0: "grey",
-    1: "blue",
-    2: "green",
-    3: "red",
-    4: "yellow",
-    5: "violet",
-    6: "brown",
-    7: "black",
-}
-
-
 def rank_deviation(choices: list[int]) -> float:
     """Calculate deviation from ideal position for each color."""
     deviations = []
