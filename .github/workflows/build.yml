@@ -11,9 +11,11 @@ jobs:
         include:
           - os: ubuntu-latest
             sep: ":"
+            asset: psychotests-linux-x86_64
             ext: ""
           - os: windows-latest
             sep: ";"
+            asset: psychotests-windows-x86_64.exe
             ext: ".exe"
 
     runs-on: ${{ matrix.os }}
@@ -30,19 +32,16 @@ jobs:
         run: pip install pyinstaller pydantic textual rich
 
       - name: Build
-        run: |
-          pyinstaller --onefile `
-            --add-data "src/app.tcss${{ matrix.sep }}src/" `
-            --add-data "src/data${{ matrix.sep }}src/data" `
-            --name psychotests${{ matrix.ext }} `
-            run.py
-        shell: pwsh
+        run: pyinstaller --onefile --add-data "src/app.tcss${{ matrix.sep }}src/" --add-data "src/data${{ matrix.sep }}src/data" --name psychotests run.py
 
-      - name: Upload
+      - name: Rename binary
+        run: mv dist/psychotests${{ matrix.ext }} dist/${{ matrix.asset }}
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: psychotests-${{ matrix.os }}
-          path: dist/psychotests${{ matrix.ext }}
+          name: ${{ matrix.asset }}
+          path: dist/${{ matrix.asset }}
 
   release:
     needs: build

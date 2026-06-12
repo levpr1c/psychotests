@@ -29,6 +29,11 @@ python3 run.py
 
 Or grab a **pre-built binary** from [releases](https://github.com/anomalyco/psychotests/releases) (Linux x86_64, ~22 MB, no Python needed).
 
+Arch Linux — install from **AUR**:
+```bash
+yay -S psychotests-bin
+```
+
 ### 🎮 Controls
 
 | Key | Action |

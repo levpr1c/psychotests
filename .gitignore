@@ -36,5 +36,8 @@ venv.bak/
 # Database
 data/
 
+# OpenCode local agent memory
+.opencode/memory/
+
 # Release builds (tracked manually)
 release/*.zip

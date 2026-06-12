@@ -1,32 +1,18 @@
-# Maintainer: <your-email>
-# Contributor: <your-name>
+# Maintainer: Lev <levpr1c@proton.me>
 
 pkgname=psychotests-bin
-pkgver=1.0.0
+pkgver=1.0.2
 pkgrel=1
-pkgdesc="TUI psychological testing application (9 tests)"
+pkgdesc='TUI psychological testing application (9 tests)'
 arch=('x86_64')
-url="https://github.com/<user>/psychotests"
+url='https://github.com/levpr1c/psychotests'
 license=('custom:WTFPL')
 depends=()
-makedepends=('python' 'python-pip' 'python-pyinstaller')
-source=("$pkgname-$pkgver.tar.gz::https://github.com/<user>/psychotests/archive/v$pkgver.tar.gz")
-sha256sums=('SKIP')
-
-build() {
-  cd "$srcdir/psychotests-$pkgver"
-  python -m venv _build_venv
-  source _build_venv/bin/activate
-  pip install --no-input -r requirements.txt pyinstaller
-  pyinstaller --onefile \
-    --add-data "src/app.tcss:src/" \
-    --add-data "src/data:src/data" \
-    --name psychotests \
-    run.py
-  deactivate
-}
+provides=('psychotests')
+conflicts=('psychotests')
+source=("psychotests-linux-x86_64::https://github.com/levpr1c/psychotests/releases/download/v$pkgver/psychotests-linux-x86_64")
+sha256sums=('c26ec9eaee79707dd06f5b5d0362ff1104e49224ef774b8ad36548ebf9672b81')
 
 package() {
-  install -Dm755 "$srcdir/psychotests-$pkgver/dist/psychotests" \
-    "$pkgdir/usr/bin/psychotests"
+  install -Dm755 "$srcdir/psychotests-linux-x86_64" "$pkgdir/usr/bin/psychotests"
 }
